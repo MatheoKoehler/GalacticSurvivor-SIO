@@ -44,7 +44,7 @@ export const CHARACTERS = {
             description: "+20% XP",
             xpGain: 0.20 
         },
-        unlockCondition: { type: 'level', value: 20, description: "Atteindre le niveau 20" },
+        unlockCondition: { type: 'level', value: 15, description: "Atteindre le niveau 15" },
         lore: "Génie en physique quantique. Ses connaissances scientifiques sont inégalées."
     },
     
@@ -59,7 +59,7 @@ export const CHARACTERS = {
             description: "+15% vitesse projectiles",
             projectileSpeed: 0.15 
         },
-        unlockCondition: { type: 'survive', minutes: 10, description: "Survivre 10 minutes" },
+        unlockCondition: { type: 'survive', minutes: 5, description: "Survivre 5 minutes" },
         lore: "Spécialiste des armes lourdes. Rien ne lui résiste sur le champ de bataille."
     },
     
@@ -105,7 +105,7 @@ export const CHARACTERS = {
             description: "+25% zone d'effet",
             areaSize: 0.25 
         },
-        unlockCondition: { type: 'survive', minutes: 15, map: 'alien_ship', description: "Survivre 15 min sur Vaisseau Alien" },
+        unlockCondition: { type: 'survive', minutes: 7, map: 'alien_ship', description: "Survivre 7 min sur Vaisseau Alien" },
         lore: "Pouvoirs mentaux mystérieux. Ses capacités psychiques défient toute explication."
     },
     
@@ -823,7 +823,7 @@ export const MAPS = {
         eliteChance: 0.04,
         boss: 'mech_titan',
         hazards: ['sandstorm'],
-        unlockCondition: { type: 'survive', minutes: 10, description: "Survivre 10 min sur Station" },
+        unlockCondition: { type: 'survive', minutes: 5, description: "Survivre 5 min sur Station" },
         difficultyMult: 1.2
     },
     
