@@ -383,6 +383,56 @@ export class Game {
             ctx.stroke();
             ctx.globalAlpha = 1;
         }
+
+        // === NOUVEAU: Flamethrower render ===
+if (this.weaponSystem.flamethrowerRender) {
+    const ft = this.weaponSystem.flamethrowerRender;
+    
+    ctx.save();
+    ctx.translate(ft.x, ft.y);
+    ctx.rotate(ft.angle);
+    
+    // Dessiner le cône de flammes avec un gradient
+    const gradient = ctx.createRadialGradient(0, 0, 0, ft.range * 0.5, 0, ft.range);
+    gradient.addColorStop(0, 'rgba(255, 200, 50, 0.8)');
+    gradient.addColorStop(0.3, 'rgba(255, 100, 0, 0.6)');
+    gradient.addColorStop(0.6, 'rgba(255, 50, 0, 0.4)');
+    gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+    
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, ft.range, -ft.coneAngle, ft.coneAngle);
+    ctx.closePath();
+    
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    // Ajouter un effet de "core" plus lumineux au centre
+    const coreGradient = ctx.createRadialGradient(0, 0, 0, ft.range * 0.2, 0, ft.range * 0.5);
+    coreGradient.addColorStop(0, 'rgba(255, 255, 200, 0.9)');
+    coreGradient.addColorStop(0.5, 'rgba(255, 200, 50, 0.5)');
+    coreGradient.addColorStop(1, 'rgba(255, 100, 0, 0)');
+    
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, ft.range * 0.6, -ft.coneAngle * 0.7, ft.coneAngle * 0.7);
+    ctx.closePath();
+    
+    ctx.fillStyle = coreGradient;
+    ctx.fill();
+    
+    // Effet de scintillement
+    ctx.globalAlpha = 0.3 + Math.random() * 0.3;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.arc(0, 0, ft.range * (0.7 + Math.random() * 0.3), -ft.coneAngle * 0.5, ft.coneAngle * 0.5);
+    ctx.closePath();
+    ctx.fillStyle = '#ffff00';
+    ctx.fill();
+    
+    ctx.restore();
+    ctx.globalAlpha = 1;
+}
         
         // Joueur
         this.player.render(ctx);

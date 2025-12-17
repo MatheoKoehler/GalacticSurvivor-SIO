@@ -490,25 +490,27 @@ export class EffectsManager {
     }
     
     render(ctx, camera) {
-        ctx.save();
-        ctx.translate(-camera.x, -camera.y);
-        
-        // Particules
-        for (const p of this.particles) {
-            if (p.active) {
-                p.render(ctx);
-            }
+    // SUPPRIMEZ ces lignes car la translation est déjà faite dans Game.js
+    // ctx.save();
+    // ctx.translate(-camera.x, -camera.y);
+    
+    // Particules
+    for (const p of this.particles) {
+        if (p.active) {
+            p.render(ctx);
         }
-        
-        // Damage numbers
-        for (const d of this.damageNumbers) {
-            if (d.active) {
-                d.render(ctx);
-            }
-        }
-        
-        ctx.restore();
     }
+    
+    // Damage numbers
+    for (const d of this.damageNumbers) {
+        if (d.active) {
+            d.render(ctx);
+        }
+    }
+    
+    // SUPPRIMEZ aussi cette ligne
+    // ctx.restore();
+}
     
     renderFlash(ctx, width, height) {
         if (this.flashDuration > 0 && this.flashColor) {

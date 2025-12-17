@@ -443,57 +443,158 @@ export class WeaponSystem {
         return results;
     }
     
-    updateFlamethrower(weapon, data, level, enemies, damage, dt) {
-        const results = [];
-        const player = this.player;
+updateFlamethrower(weapon, data, level, enemies, damage, dt) {
+    const results = [];
+    const player = this.player;
+    
+    const range = data.range * (data.levelBonuses.rangeMult[level - 1] || 1) * player.areaMult;
+    const coneAngle = data.coneAngle * (data.levelBonuses.angleMult[level - 1] || 1);
+    const interval = data.damageInterval;
+    
+    // Timer de dégâts
+    if (!weapon.damageTimer) weapon.damageTimer = 0;
+    weapon.damageTimer -= dt;
+    
+    if (weapon.damageTimer <= 0) {
+        weapon.damageTimer = interval;
         
-        const range = data.range * (data.levelBonuses.rangeMult[level - 1] || 1) * player.areaMult;
-        const coneAngle = data.coneAngle * (data.levelBonuses.angleMult[level - 1] || 1);
-        const interval = data.damageInterval;
+        const facingAngle = player.facingAngle;
         
-        // Timer de dégâts
-        if (!weapon.damageTimer) weapon.damageTimer = 0;
-        weapon.damageTimer -= dt;
-        
-        if (weapon.damageTimer <= 0) {
-            weapon.damageTimer = interval;
+        // Dégâts aux ennemis dans le cône
+        for (const enemy of enemies) {
+            if (enemy.hp <= 0) continue;
             
-            const facingAngle = player.facingAngle;
+            const dist = distance(player.x, player.y, enemy.x, enemy.y);
+            if (dist > range) continue;
             
-            // Dégâts aux ennemis dans le cône
-            for (const enemy of enemies) {
-                if (enemy.hp <= 0) continue;
-                
-                const dist = distance(player.x, player.y, enemy.x, enemy.y);
-                if (dist > range) continue;
-                
-                const enemyAngle = angle(player.x, player.y, enemy.x, enemy.y);
-                let angleDiff = enemyAngle - facingAngle;
-                while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-                while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
-                
-                if (Math.abs(angleDiff) < coneAngle) {
-                    results.push({ enemy, damage });
-                    
-                    // Particules de feu
-                    if (this.effects && Math.random() < 0.3) {
-                        this.effects.spawnParticle({
-                            x: enemy.x + randomRange(-10, 10),
-                            y: enemy.y + randomRange(-10, 10),
-                            vx: randomRange(-30, 30),
-                            vy: randomRange(-50, -20),
-                            life: 0.3,
-                            size: randomRange(5, 10),
-                            color: data.color,
-                            type: 'circle'
-                        });
-                    }
-                }
+            const enemyAngle = angle(player.x, player.y, enemy.x, enemy.y);
+            let angleDiff = enemyAngle - facingAngle;
+            while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+            while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+            
+            if (Math.abs(angleDiff) < coneAngle) {
+                results.push({ enemy, damage });
             }
         }
-        
-        return results;
     }
+    
+    // === PARTICULES COUVRANT TOUTE LA HITBOX ===
+    if (this.effects) {
+        const facingAngle = player.facingAngle;
+        
+        // Particules réparties sur toute la longueur du cône
+        const particleCount = 12;
+        
+        for (let i = 0; i < particleCount; i++) {
+            // Distance aléatoire sur toute la portée (du joueur jusqu'à range)
+            const distanceFromPlayer = randomRange(20, range);
+            
+            // Angle aléatoire dans tout le cône
+            const particleAngle = facingAngle + randomRange(-coneAngle, coneAngle);
+            
+            // Position de la particule
+            const px = player.x + Math.cos(particleAngle) * distanceFromPlayer;
+            const py = player.y + Math.sin(particleAngle) * distanceFromPlayer;
+            
+            // Vitesse qui suit la direction du cône
+            const speed = randomRange(50, 150);
+            
+            // Taille qui diminue avec la distance (plus gros près du joueur)
+            const sizeFactor = 1 - (distanceFromPlayer / range) * 0.5;
+            const size = randomRange(8, 22) * sizeFactor;
+            
+            // Couleurs variées de feu (plus jaune près du joueur, plus rouge loin)
+            let color;
+            const distRatio = distanceFromPlayer / range;
+            if (distRatio < 0.3) {
+                // Proche: jaune/blanc
+                color = randomChoice(['#ffff00', '#ffcc00', '#ffffff', '#ffdd44']);
+            } else if (distRatio < 0.6) {
+                // Milieu: orange
+                color = randomChoice(['#ff6600', '#ff8800', '#ffaa00', '#ff4400']);
+            } else {
+                // Loin: rouge/orange foncé
+                color = randomChoice(['#ff3300', '#ff2200', '#ff4400', '#cc2200']);
+            }
+            
+            this.effects.spawnParticle({
+                x: px,
+                y: py,
+                vx: Math.cos(particleAngle) * speed + randomRange(-30, 30),
+                vy: Math.sin(particleAngle) * speed + randomRange(-30, 30),
+                life: randomRange(0.1, 0.25),
+                size: size,
+                color: color,
+                type: 'circle',
+                shrink: true,
+                fadeOut: true,
+                friction: 0.9
+            });
+        }
+        
+        // Particules de bord du cône (pour mieux définir les limites)
+        for (let i = 0; i < 4; i++) {
+            const edgeAngle = facingAngle + (Math.random() > 0.5 ? coneAngle : -coneAngle) * randomRange(0.8, 1.0);
+            const edgeDist = randomRange(30, range * 0.9);
+            
+            this.effects.spawnParticle({
+                x: player.x + Math.cos(edgeAngle) * edgeDist,
+                y: player.y + Math.sin(edgeAngle) * edgeDist,
+                vx: Math.cos(edgeAngle) * 80,
+                vy: Math.sin(edgeAngle) * 80,
+                life: randomRange(0.1, 0.2),
+                size: randomRange(6, 14),
+                color: randomChoice(['#ff4400', '#ff6600', '#ff3300']),
+                type: 'circle',
+                shrink: true,
+                fadeOut: true,
+                friction: 0.85
+            });
+        }
+        
+        // Étincelles occasionnelles
+        if (Math.random() < 0.4) {
+            const sparkAngle = facingAngle + randomRange(-coneAngle, coneAngle);
+            const sparkDist = randomRange(range * 0.5, range);
+            
+            this.effects.spawnParticle({
+                x: player.x + Math.cos(sparkAngle) * sparkDist,
+                y: player.y + Math.sin(sparkAngle) * sparkDist,
+                vx: randomRange(-100, 100),
+                vy: randomRange(-100, 100),
+                life: randomRange(0.2, 0.4),
+                size: randomRange(2, 5),
+                color: '#ffff88',
+                type: 'spark',
+                shrink: false,
+                fadeOut: true,
+                friction: 0.95,
+                gravity: 50
+            });
+        }
+        
+        // Fumée à l'extrémité
+        if (Math.random() < 0.2) {
+            const smokeAngle = facingAngle + randomRange(-coneAngle * 0.7, coneAngle * 0.7);
+            
+            this.effects.spawnParticle({
+                x: player.x + Math.cos(smokeAngle) * range * randomRange(0.8, 1.0),
+                y: player.y + Math.sin(smokeAngle) * range * randomRange(0.8, 1.0),
+                vx: randomRange(-15, 15),
+                vy: randomRange(-30, -10),
+                life: randomRange(0.3, 0.6),
+                size: randomRange(12, 25),
+                color: 'rgba(100, 50, 50, 0.5)',
+                type: 'circle',
+                shrink: false,
+                fadeOut: true,
+                friction: 0.98
+            });
+        }
+    }
+    
+    return results;
+}
     
     renderForceField(x, y, radius, color) {
         // Cette méthode sera appelée dans le render du jeu
