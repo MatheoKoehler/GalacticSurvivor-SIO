@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galactic Survivor</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Écran titre -->
+    <div id="title-screen" class="screen">
+        <div class="stars-bg"></div>
+        <h1 class="game-title">GALACTIC<br>SURVIVOR</h1>
+        <div class="menu-buttons">
+            <button id="btn-play" class="menu-btn primary">
+                <span class="btn-icon">▶</span> JOUER
+            </button>
+            <button id="btn-characters" class="menu-btn">
+                <span class="btn-icon">👤</span> PERSONNAGES
+            </button>
+            <button id="btn-talents" class="menu-btn">
+                <span class="btn-icon">⚡</span> TALENTS
+            </button>
+            <button id="btn-collection" class="menu-btn">
+                <span class="btn-icon">📚</span> COLLECTION
+            </button>
+            <button id="btn-options" class="menu-btn">
+                <span class="btn-icon">⚙</span> OPTIONS
+            </button>
+        </div>
+        <div class="credits-display">
+            <span class="credit-icon">💎</span>
+            <span id="total-credits">0</span>
+        </div>
+    </div>
+
+    <!-- Sélection personnage -->
+    <div id="character-select" class="screen hidden">
+        <div class="stars-bg"></div>
+        <h2>CHOISIR UN SURVIVANT</h2>
+        <div id="character-grid" class="character-grid"></div>
+        <div class="character-info" id="character-info">
+            <h3 id="char-name">Commander Rex</h3>
+            <p id="char-lore">Vétéran de la guerre contre les Xenos.</p>
+            <div id="char-stats"></div>
+            <div id="char-passive"></div>
+        </div>
+        <div class="select-buttons">
+            <button id="btn-back-char" class="menu-btn">← RETOUR</button>
+            <button id="btn-select-char" class="menu-btn primary">SÉLECTIONNER →</button>
+        </div>
+    </div>
+
+    <!-- Sélection map -->
+    <div id="map-select" class="screen hidden">
+        <div class="stars-bg"></div>
+        <h2>CHOISIR UNE ZONE</h2>
+        <div id="map-grid" class="map-grid"></div>
+        <div class="map-info" id="map-info">
+            <h3 id="map-name">Station Orbitale</h3>
+            <p id="map-desc">Une station abandonnée infestée d'aliens.</p>
+            <div id="map-details"></div>
+        </div>
+        <div class="select-buttons">
+            <button id="btn-back-map" class="menu-btn">← RETOUR</button>
+            <button id="btn-start-game" class="menu-btn primary">COMMENCER →</button>
+        </div>
+    </div>
+
+    <!-- Écran Talents -->
+    <div id="talents-screen" class="screen hidden">
+        <div class="stars-bg"></div>
+        <h2>AMÉLIORATIONS PERMANENTES</h2>
+        <div class="talent-credits">
+            <span class="credit-icon">💎</span>
+            <span id="talent-credit-count">0</span>
+        </div>
+        <div id="talent-grid" class="talent-grid"></div>
+        <button id="btn-back-talents" class="menu-btn">← RETOUR</button>
+    </div>
+
+    <!-- Écran Collection -->
+    <div id="collection-screen" class="screen hidden">
+        <div class="stars-bg"></div>
+        <h2>COLLECTION</h2>
+        <div class="collection-tabs">
+            <button class="tab-btn active" data-tab="weapons">ARMES</button>
+            <button class="tab-btn" data-tab="passives">MODULES</button>
+            <button class="tab-btn" data-tab="enemies">ENNEMIS</button>
+        </div>
+        <div id="collection-content" class="collection-content"></div>
+        <button id="btn-back-collection" class="menu-btn">← RETOUR</button>
+    </div>
+
+    <!-- Écran Options -->
+    <div id="options-screen" class="screen hidden">
+        <div class="stars-bg"></div>
+        <h2>OPTIONS</h2>
+        <div class="options-container">
+            <div class="option-row">
+                <label>Volume Musique</label>
+                <input type="range" id="music-volume" min="0" max="100" value="50">
+                <span id="music-vol-val">50%</span>
+            </div>
+            <div class="option-row">
+                <label>Volume Effets</label>
+                <input type="range" id="sfx-volume" min="0" max="100" value="70">
+                <span id="sfx-vol-val">70%</span>
+            </div>
+            <div class="option-row">
+                <label>Particules</label>
+                <select id="particles-quality">
+                    <option value="high">Élevé</option>
+                    <option value="medium">Moyen</option>
+                    <option value="low">Faible</option>
+                </select>
+            </div>
+            <div class="option-row">
+                <label>Screen Shake</label>
+                <input type="checkbox" id="screen-shake" checked>
+            </div>
+            <div class="option-row danger">
+                <button id="btn-reset-save" class="menu-btn danger">🗑 EFFACER SAUVEGARDE</button>
+            </div>
+        </div>
+        <button id="btn-back-options" class="menu-btn">← RETOUR</button>
+    </div>
+
+    <!-- Canvas de jeu -->
+    <canvas id="game-canvas" class="hidden"></canvas>
+
+    <!-- HUD en jeu -->
+    <div id="hud" class="hidden">
+        <div id="hud-top">
+            <div id="hud-left">
+                <div id="health-container">
+                    <div id="health-bar">
+                        <div id="health-fill"></div>
+                        <div id="health-regen"></div>
+                    </div>
+                    <span id="health-text">100/100</span>
+                </div>
+                <div id="xp-container">
+                    <span id="current-level">Niv. 1</span>
+                    <div id="xp-bar">
+                        <div id="xp-fill"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="hud-center">
+                <div id="timer">00:00</div>
+                <div id="wave-indicator">Vague 1</div>
+            </div>
+            <div id="hud-right">
+                <div id="kill-count">
+                    <span class="kill-icon">💀</span>
+                    <span id="kills">0</span>
+                </div>
+                <div id="gold-count">
+                    <span class="gold-icon">💎</span>
+                    <span id="gold">0</span>
+                </div>
+            </div>
+        </div>
+        <div id="hud-bottom">
+            <div id="weapons-display"></div>
+            <div id="passives-display"></div>
+        </div>
+        <div id="boss-health-container" class="hidden">
+            <span id="boss-name">BOSS</span>
+            <div id="boss-health-bar">
+                <div id="boss-health-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran Level-Up -->
+    <div id="levelup-screen" class="screen hidden">
+        <div class="levelup-overlay"></div>
+        <div class="levelup-content">
+            <h2 class="levelup-title">⚡ NIVEAU SUPÉRIEUR! ⚡</h2>
+            <p class="levelup-subtitle">Choisissez une amélioration</p>
+            <div id="upgrade-choices"></div>
+            <button id="btn-reroll" class="reroll-btn">
+                🔄 Relancer (<span id="reroll-count">1</span>)
+            </button>
+        </div>
+    </div>
+
+    <!-- Écran Pause -->
+    <div id="pause-screen" class="screen hidden">
+        <div class="pause-overlay"></div>
+        <div class="pause-content">
+            <h2>⏸ PAUSE</h2>
+            <div id="current-build">
+                <h3>Équipement actuel</h3>
+                <div id="pause-weapons"></div>
+                <div id="pause-passives"></div>
+            </div>
+            <div id="run-stats-pause">
+                <p>Temps: <span id="pause-time">00:00</span></p>
+                <p>Kills: <span id="pause-kills">0</span></p>
+                <p>Niveau: <span id="pause-level">1</span></p>
+            </div>
+            <div class="pause-buttons">
+                <button id="btn-resume" class="menu-btn primary">▶ REPRENDRE</button>
+                <button id="btn-quit" class="menu-btn danger">✕ ABANDONNER</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran Game Over -->
+    <div id="gameover-screen" class="screen hidden">
+        <div class="gameover-overlay"></div>
+        <div class="gameover-content">
+            <h2 id="gameover-title">MISSION ÉCHOUÉE</h2>
+            <div id="run-stats">
+                <div class="stat-row">
+                    <span class="stat-label">⏱ Temps de survie</span>
+                    <span id="stat-time" class="stat-value">00:00</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">💀 Ennemis éliminés</span>
+                    <span id="stat-kills" class="stat-value">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">📈 Niveau atteint</span>
+                    <span id="stat-level" class="stat-value">1</span>
+                </div>
+                <div class="stat-row highlight">
+                    <span class="stat-label">💎 Crédits gagnés</span>
+                    <span id="stat-gold" class="stat-value">+0</span>
+                </div>
+            </div>
+            <div id="unlocks" class="unlocks-container"></div>
+            <div class="gameover-buttons">
+                <button id="btn-retry" class="menu-btn primary">🔄 RECOMMENCER</button>
+                <button id="btn-menu" class="menu-btn">🏠 MENU PRINCIPAL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Écran Victoire -->
+    <div id="victory-screen" class="screen hidden">
+        <div class="victory-overlay"></div>
+        <div class="victory-content">
+            <h2 class="victory-title">🏆 VICTOIRE! 🏆</h2>
+            <p class="victory-subtitle">Vous avez survécu!</p>
+            <div id="victory-stats"></div>
+            <div id="victory-unlocks"></div>
+            <div class="victory-buttons">
+                <button id="btn-victory-continue" class="menu-btn primary">CONTINUER</button>
+                <button id="btn-victory-menu" class="menu-btn">MENU</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification de déblocage -->
+    <div id="unlock-notification" class="notification hidden">
+        <div class="notification-content">
+            <span class="notification-icon">🔓</span>
+            <span class="notification-text">Nouveau déblocage!</span>
+        </div>
+    </div>
+
+    <!-- Loading screen -->
+    <div id="loading-screen" class="screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Chargement...</p>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
